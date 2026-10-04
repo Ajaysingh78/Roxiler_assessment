@@ -1,5 +1,5 @@
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -9,11 +9,11 @@ generator client {
 
 model User {
   id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  address   String
-  role      String   @default("USER") // "ADMIN", "USER", "STORE_OWNER"
+  name      String   @db.VarChar(60)
+  email     String   @unique @db.VarChar(255)
+  password  String   @db.VarChar(255)
+  address   String   @db.VarChar(400)
+  role      String   @default("USER") @db.VarChar(20) // "ADMIN", "USER", "STORE_OWNER"
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -25,10 +25,10 @@ model User {
 
 model Store {
   id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  address   String
-  ownerId   String?
+  name      String   @db.VarChar(60)
+  email     String   @unique @db.VarChar(255)
+  address   String   @db.VarChar(400)
+  ownerId   String?  @db.VarChar(36)
   owner     User?    @relation("StoreOwner", fields: [ownerId], references: [id], onDelete: SetNull)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
