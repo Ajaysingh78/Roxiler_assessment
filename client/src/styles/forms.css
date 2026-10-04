@@ -196,29 +196,3 @@
   color: var(--text-muted);
   font-size: 0.9rem;
 }
-
-/* Demo Credentials Box */
-.demo-credentials-box {
-  background: var(--bg-subtle);
-  border: 1px dashed var(--border-medium);
-  border-radius: var(--radius-md);
-  padding: 1rem;
-  margin-top: 1.5rem;
-  font-size: 0.82rem;
-}
-
-.demo-credentials-box h4 {
-  font-size: 0.85rem;
-  margin-bottom: 0.5rem;
-  color: var(--color-primary);
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.demo-buttons-row {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin-top: 0.5rem;
-}

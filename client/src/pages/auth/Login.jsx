@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { Mail, Lock, Eye, EyeOff, LogIn, Sparkles, AlertCircle } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, LogIn, AlertCircle } from 'lucide-react';
 
 export const Login = () => {
   const { login } = useAuth();
@@ -48,12 +48,6 @@ export const Login = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const setDemoCredentials = (demoEmail, demoPass) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
-    setErrorMsg('');
   };
 
   return (
@@ -146,51 +140,53 @@ export const Login = () => {
             </div>
           </div>
 
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0.75rem 0 1.25rem', fontSize: '0.85rem' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: 'var(--text-muted)' }}>
+              <input type="checkbox" style={{ accentColor: 'var(--color-primary)', width: '15px', height: '15px', cursor: 'pointer' }} />
+              <span>Remember me</span>
+            </label>
+            <a
+              href="#forgot-password"
+              onClick={(e) => {
+                e.preventDefault();
+                alert('For security compliance, password resets are processed via Administrator invitation or your security settings.');
+              }}
+              style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 500 }}
+            >
+              Forgot password?
+            </a>
+          </div>
+
           <button
             type="submit"
             className="btn btn-primary"
-            style={{ width: '100%', marginTop: '0.75rem' }}
+            style={{ width: '100%' }}
             disabled={loading}
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? 'Authenticating...' : 'Sign In'}
           </button>
         </form>
-
-        {/* Demo Accounts Quick-Fill Box for Evaluators */}
-        <div className="demo-credentials-box">
-          <h4>
-            <Sparkles size={15} /> Quick Demo Logins (Evaluator Presets)
-          </h4>
-          <div className="demo-buttons-row">
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              onClick={() => setDemoCredentials('admin@roxiler.com', 'Admin@123')}
-            >
-              👑 Admin
-            </button>
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              onClick={() => setDemoCredentials('owner.john@freshmart.com', 'Owner@123')}
-            >
-              🏪 Store Owner
-            </button>
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              onClick={() => setDemoCredentials('alexandra.turner@example.com', 'User@123')}
-            >
-              👤 Normal User
-            </button>
-          </div>
-        </div>
 
         <div style={{ textAlign: 'center', marginTop: '1.75rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
           Don't have an account?{' '}
           <Link to="/signup" style={{ fontWeight: 600, color: 'var(--color-primary)' }}>
-            Sign up here
+            Create an account
           </Link>
+        </div>
+
+        <div
+          style={{
+            marginTop: '2rem',
+            paddingTop: '1.25rem',
+            borderTop: '1px solid var(--border-subtle)',
+            textAlign: 'center',
+            fontSize: '0.75rem',
+            color: 'var(--text-dim)',
+            lineHeight: 1.5
+          }}
+        >
+          Protected by enterprise-grade 256-bit encryption. <br />
+          By continuing, you agree to Roxiler's Terms of Service and Privacy Policy.
         </div>
       </div>
     </div>
