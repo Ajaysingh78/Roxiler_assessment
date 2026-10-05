@@ -8,7 +8,7 @@ dotenv.config();
  * Supports standard DATABASE_URL as well as Railway-provided MYSQL_* variables
  */
 function getPoolConfig() {
-  const databaseUrl = process.env.DATABASE_URL || process.env.MYSQL_URL;
+  const databaseUrl = process.env.DATABASE_URL || process.env.MYSQL_PRIVATE_URL || process.env.MYSQL_PUBLIC_URL || process.env.MYSQL_URL;
 
   if (databaseUrl) {
     try {
