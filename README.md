@@ -2,6 +2,16 @@
 
 > A secure, role-based multi-store rating web application engineered for the **Roxiler Systems Full Stack Developer Intern Assessment**. Built with **React 18**, **Node.js / Express**, and a **MySQL 8.0** relational database via an enterprise **Modular Monolithic Architecture**.
 
+Live Demo
+
+Frontend:
+
+https://restro-rating.netlify.app/
+
+Backend API:
+
+https://roxilerassessment-production.up.railway.app/
+
 [![Node.js](https://img.shields.io/badge/Node.js-v20%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Express.js](https://img.shields.io/badge/Express.js-v4.21.2-000000?logo=express&logoColor=white)](https://expressjs.com/)
 [![React](https://img.shields.io/badge/React-v18.3.1-61DAFB?logo=react&logoColor=black)](https://react.dev/)
