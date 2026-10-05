@@ -20,7 +20,10 @@ import {
   UserCheck,
   Building,
   Check,
-  AlertCircle
+  AlertCircle,
+  Eye,
+  Info,
+  Calendar
 } from 'lucide-react';
 
 export const AdminDashboard = () => {
@@ -72,6 +75,10 @@ export const AdminDashboard = () => {
   });
   const [addStoreErrors, setAddStoreErrors] = useState({});
   const [submittingStore, setSubmittingStore] = useState(false);
+
+  // View User Details Modal State
+  const [viewUserModalOpen, setViewUserModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   // Fetch Dashboard Metrics
   const fetchStats = useCallback(async () => {
@@ -309,6 +316,27 @@ export const AdminDashboard = () => {
           <span style={{ color: 'var(--text-dim)', fontSize: '0.75rem' }}>No Store</span>
         );
       }
+    },
+    {
+      key: 'actions',
+      label: 'Details',
+      sortable: false,
+      render: (_, row) => (
+        <button
+          type="button"
+          className="btn btn-outline btn-sm"
+          style={{ padding: '0.25rem 0.55rem', fontSize: '0.75rem', gap: '0.35rem' }}
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedUser(row);
+            setViewUserModalOpen(true);
+          }}
+          title="View full user details"
+        >
+          <Eye size={13} />
+          <span>Details</span>
+        </button>
+      )
     }
   ];
 
@@ -862,6 +890,174 @@ export const AdminDashboard = () => {
           </div>
         </form>
       </Modal>
+
+      {/* View User Details Modal */}
+      {selectedUser && (
+        <Modal
+          isOpen={viewUserModalOpen}
+          onClose={() => {
+            setViewUserModalOpen(false);
+            setSelectedUser(null);
+          }}
+          title="User Account Details"
+          maxWidth="560px"
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {/* Header with avatar / name / role */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1rem',
+                paddingBottom: '1.25rem',
+                borderBottom: '1px solid var(--border-subtle)'
+              }}
+            >
+              <div
+                style={{
+                  width: '54px',
+                  height: '54px',
+                  borderRadius: 'var(--radius-lg)',
+                  background: 'linear-gradient(135deg, var(--color-primary), var(--color-accent))',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  fontWeight: 700,
+                  fontSize: '1.25rem'
+                }}
+              >
+                {selectedUser.name ? selectedUser.name.charAt(0).toUpperCase() : 'U'}
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.25rem', marginBottom: '0.25rem' }}>{selectedUser.name}</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  {selectedUser.role === 'ADMIN' && <span className="badge badge-admin">System Admin</span>}
+                  {selectedUser.role === 'STORE_OWNER' && <span className="badge badge-owner">Store Owner</span>}
+                  {selectedUser.role === 'USER' && <span className="badge badge-user">Normal User</span>}
+                  <span style={{ fontSize: '0.78rem', color: 'var(--text-dim)' }}>
+                    ID: {selectedUser.id}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Profile fields */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
+              <div
+                style={{
+                  padding: '0.85rem 1rem',
+                  borderRadius: 'var(--radius-md)',
+                  background: 'var(--bg-subtle)',
+                  border: '1px solid var(--border-subtle)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                  <Mail size={15} color="var(--color-primary)" />
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email Address</span>
+                </div>
+                <div style={{ fontWeight: 600, color: 'var(--text-main)', fontSize: '0.95rem' }}>
+                  {selectedUser.email}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  padding: '0.85rem 1rem',
+                  borderRadius: 'var(--radius-md)',
+                  background: 'var(--bg-subtle)',
+                  border: '1px solid var(--border-subtle)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                  <MapPin size={15} color="var(--color-primary)" />
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Physical Address</span>
+                </div>
+                <div style={{ color: 'var(--text-main)', fontSize: '0.92rem', lineHeight: 1.4 }}>
+                  {selectedUser.address}
+                </div>
+              </div>
+
+              {selectedUser.createdAt && (
+                <div
+                  style={{
+                    padding: '0.85rem 1rem',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'var(--bg-subtle)',
+                    border: '1px solid var(--border-subtle)'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                    <Calendar size={15} color="var(--color-primary)" />
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Registration Date</span>
+                  </div>
+                  <div style={{ color: 'var(--text-main)', fontSize: '0.92rem' }}>
+                    {new Date(selectedUser.createdAt).toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Requirement: If the user is a Store Owner, their Rating should also be displayed */}
+              {selectedUser.role === 'STORE_OWNER' && (
+                <div
+                  style={{
+                    padding: '1.25rem',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'rgba(245, 158, 11, 0.08)',
+                    border: '1px solid rgba(245, 158, 11, 0.3)'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                    <Store size={18} color="#f59e0b" />
+                    <span style={{ fontWeight: 700, color: '#f59e0b', fontSize: '0.95rem' }}>
+                      Store Owner Information & Rating
+                    </span>
+                  </div>
+
+                  {selectedUser.storeName ? (
+                    <div>
+                      <div style={{ marginBottom: '0.5rem' }}>
+                        <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Assigned Store: </span>
+                        <strong style={{ color: 'var(--text-main)' }}>{selectedUser.storeName}</strong>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem' }}>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Store Average Rating:</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <StarRating rating={selectedUser.storeRating || 0} size={18} />
+                          <span className="badge badge-rating" style={{ fontSize: '0.85rem', padding: '0.2rem 0.5rem' }}>
+                            ★ {selectedUser.storeRating !== null && selectedUser.storeRating > 0 ? selectedUser.storeRating.toFixed(1) : 'No Ratings Yet'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
+                      No store has been assigned to this owner yet.
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => {
+                  setViewUserModalOpen(false);
+                  setSelectedUser(null);
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

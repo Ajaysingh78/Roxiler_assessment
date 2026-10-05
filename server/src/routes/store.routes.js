@@ -1,6 +1,6 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import prisma from '../config/prisma.js';
+import { userRepository } from '../repositories/user.repository.js';
 import {
   getStores,
   getStoreById,
@@ -20,10 +20,7 @@ const optionalAuth = async (req, res, next) => {
         token,
         process.env.JWT_SECRET || 'roxiler_super_secret_jwt_key_2026_evaluation_token'
       );
-      const user = await prisma.user.findUnique({
-        where: { id: decoded.id },
-        select: { id: true, name: true, email: true, role: true }
-      });
+      const user = await userRepository.findById(decoded.id);
       if (user) {
         req.user = user;
       }

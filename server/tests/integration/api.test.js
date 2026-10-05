@@ -1,14 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
-import app from '../src/app.js';
-import prisma from '../src/config/prisma.js';
+import app from '../../src/app.js';
+import { checkDatabaseConnection, disconnectDatabase } from '../../src/database/connection.js';
 
 let server;
 let baseUrl;
 
 test.before(async () => {
-  await prisma.$connect();
+  await checkDatabaseConnection();
   server = http.createServer(app);
   await new Promise((resolve) => {
     server.listen(0, '127.0.0.1', () => {
@@ -21,7 +21,7 @@ test.before(async () => {
 
 test.after(async () => {
   await new Promise((resolve) => server.close(resolve));
-  await prisma.$disconnect();
+  await disconnectDatabase();
 });
 
 test('GET /api/health returns healthy', async () => {

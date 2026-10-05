@@ -1,0 +1,27 @@
+{
+  "name": "roxiler-portal-monolith",
+  "version": "1.0.0",
+  "description": "Roxiler Systems Store Rating Portal — Modular Monolithic Architecture",
+  "private": true,
+  "scripts": {
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "build:client": "npm --prefix client run build",
+    "test:server": "npm --prefix server test",
+    "test:unit": "npm --prefix server run test:unit",
+    "test:integration": "npm --prefix server run test:integration",
+    "db:seed": "npm --prefix server run seed",
+    "seed": "npm --prefix server run seed"
+  },
+  "keywords": [
+    "roxiler",
+    "fullstack",
+    "modular-monolith",
+    "react",
+    "express",
+    "mysql",
+    "mysql2"
+  ],
+  "author": "Roxiler Assessment Candidate",
+  "license": "ISC"
+}

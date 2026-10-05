@@ -1,6 +1,6 @@
 import http from 'node:http';
 import app from '../src/app.js';
-import prisma from '../src/config/prisma.js';
+import { pool, checkDatabaseConnection, disconnectDatabase } from '../src/database/connection.js';
 
 async function runComprehensiveAudit() {
   console.log('=====================================================');
@@ -8,7 +8,7 @@ async function runComprehensiveAudit() {
   console.log('Target Database: MySQL (roxiler_db on localhost:3306)');
   console.log('=====================================================\n');
 
-  await prisma.$connect();
+  await checkDatabaseConnection();
   const server = http.createServer(app);
   let baseUrl;
 
@@ -428,7 +428,7 @@ async function runComprehensiveAudit() {
     assert('C. User Flow', 'No-result state returns empty array', noResultData.data.length === 0);
 
     // Rating upsert & modification
-    const initialRatingCount = await prisma.rating.count();
+    const [[{ count: initialRatingCount }]] = await pool.query('SELECT COUNT(*) as count FROM ratings');
     // Submit 4-star
     const submitRating = await fetch(`${baseUrl}/stores/${firstStoreId}/ratings`, {
       method: 'POST',
@@ -452,16 +452,19 @@ async function runComprehensiveAudit() {
     assert('C. User Flow', 'Modify existing rating to 2 succeeds', modifyRating.status === 200);
 
     // Verify rating persisted in MySQL
-    const dbRating = await prisma.rating.findFirst({
-      where: { storeId: firstStoreId, userId: userLoginData.data.user.id }
-    });
+    const [dbRatingRows] = await pool.query(
+      'SELECT * FROM ratings WHERE storeId = ? AND userId = ? LIMIT 1',
+      [firstStoreId, userLoginData.data.user.id]
+    );
+    const dbRating = dbRatingRows[0];
     assert('C. User Flow', 'Rating persisted in MySQL with value 2', dbRating?.rating === 2);
 
     // Verify submit rating twice produces NO duplicates
-    const finalRatingCount = await prisma.rating.count({
-      where: { storeId: firstStoreId, userId: userLoginData.data.user.id }
-    });
-    assert('C. User Flow', 'Submit rating twice -> exactly 1 rating row (no duplicate)', finalRatingCount === 1);
+    const [[{ count: finalRatingCount }]] = await pool.query(
+      'SELECT COUNT(*) as count FROM ratings WHERE storeId = ? AND userId = ?',
+      [firstStoreId, userLoginData.data.user.id]
+    );
+    assert('C. User Flow', 'Submit rating twice -> exactly 1 rating row (no duplicate)', Number(finalRatingCount) === 1);
 
     // User A cannot see User B's rating as their own
     const userBRes = await fetch(`${baseUrl}/auth/login`, {
@@ -497,12 +500,12 @@ async function runComprehensiveAudit() {
     assert('D. Admin Flow', 'Total Ratings metric present', typeof adminDashData.data.totalRatings === 'number');
 
     // Real MySQL counts match
-    const actualUsersCount = await prisma.user.count();
-    const actualStoresCount = await prisma.store.count();
-    const actualRatingsCount = await prisma.rating.count();
-    assert('D. Admin Flow', 'Total Users matches MySQL count', adminDashData.data.totalUsers === actualUsersCount);
-    assert('D. Admin Flow', 'Total Stores matches MySQL count', adminDashData.data.totalStores === actualStoresCount);
-    assert('D. Admin Flow', 'Total Ratings matches MySQL count', adminDashData.data.totalRatings === actualRatingsCount);
+    const [[{ count: actualUsersCount }]] = await pool.query('SELECT COUNT(*) as count FROM users');
+    const [[{ count: actualStoresCount }]] = await pool.query('SELECT COUNT(*) as count FROM stores');
+    const [[{ count: actualRatingsCount }]] = await pool.query('SELECT COUNT(*) as count FROM ratings');
+    assert('D. Admin Flow', 'Total Users matches MySQL count', adminDashData.data.totalUsers === Number(actualUsersCount));
+    assert('D. Admin Flow', 'Total Stores matches MySQL count', adminDashData.data.totalStores === Number(actualStoresCount));
+    assert('D. Admin Flow', 'Total Ratings matches MySQL count', adminDashData.data.totalRatings === Number(actualRatingsCount));
 
     // Add Store
     const uniqueStoreEmail = `store.${Date.now()}@example.com`;
@@ -519,7 +522,8 @@ async function runComprehensiveAudit() {
       })
     });
     assert('D. Admin Flow', 'Add store returns 201', addStoreRes.status === 201);
-    const dbStore = await prisma.store.findUnique({ where: { email: uniqueStoreEmail } });
+    const [dbStoreRows] = await pool.query('SELECT * FROM stores WHERE email = ? LIMIT 1', [uniqueStoreEmail]);
+    const dbStore = dbStoreRows[0];
     assert('D. Admin Flow', 'Store saved in MySQL', !!dbStore);
 
     // Add Normal User via Admin
@@ -628,19 +632,19 @@ async function runComprehensiveAudit() {
     console.log('\n--- CATEGORY F: Database + API + Security (MySQL ONLY) ---');
 
     // MySQL connection verification
-    const dbEngine = await prisma.$queryRaw`SELECT @@version as ver, DATABASE() as db`;
+    const [dbEngine] = await pool.query('SELECT @@version as ver, DATABASE() as db');
     assert('F. Database', 'MySQL connection active', !!dbEngine[0].ver);
     assert('F. Database', 'Connected to roxiler_db database', dbEngine[0].db === 'roxiler_db');
 
     // Tables verification in MySQL information_schema
-    const tables = await prisma.$queryRaw`SELECT table_name FROM information_schema.tables WHERE table_schema = 'roxiler_db'`;
+    const [tables] = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'roxiler_db'");
     const tableNames = tables.map((t) => t.TABLE_NAME || t.table_name);
     assert('F. Database', 'Users table exists in MySQL', tableNames.includes('users'));
     assert('F. Database', 'Stores table exists in MySQL', tableNames.includes('stores'));
     assert('F. Database', 'Ratings table exists in MySQL', tableNames.includes('ratings'));
 
     // Check unique email in MySQL
-    const userInDb = await prisma.user.findFirst();
+    const [[userInDb]] = await pool.query('SELECT * FROM users LIMIT 1');
     assert('F. Database', 'Password stored as bcrypt hash in MySQL', userInDb.password.startsWith('$2'));
 
     // Password never returned to frontend
@@ -679,7 +683,7 @@ async function runComprehensiveAudit() {
     auditLog.failed.push(`Runtime error: ${err.message}`);
   } finally {
     await new Promise((resolve) => server.close(resolve));
-    await prisma.$disconnect();
+    await disconnectDatabase();
   }
 
   console.log('\n=====================================================');
