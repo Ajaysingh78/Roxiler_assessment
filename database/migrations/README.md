@@ -1,26 +1,27 @@
-# Database Migrations
+# Database Schema & Migrations
 
-This project uses **Prisma Migrate** for declarative schema management and migrations against **MySQL 8.0**.
+This project uses native **MySQL 8.0 DDL statements** with automated table initialization and idempotent seeding.
 
 ### Schema Definition
 The source of truth for the database schema is located at:
-- `server/prisma/schema.prisma`
+- `database/schema.sql`
 
-### Synchronizing Schema to MySQL
-To push schema changes to the MySQL database:
+### Zero-Manual-Migration Auto Initialization
+Upon server boot, `server/src/database/connection.js` automatically executes `CREATE TABLE IF NOT EXISTS` for all required tables (`users`, `stores`, `ratings`) with all required indexes and foreign keys. This guarantees seamless, zero-config startup on local machines and cloud platforms (such as Railway).
+
+### Manual Schema Initialization (Optional)
+To manually execute the schema directly against MySQL:
 ```bash
-cd server
-npm run prisma:push
+mysql -u root -p roxiler_db < database/schema.sql
 ```
 
-### Generating Prisma Client
+### Seeding Demo Data
+To populate the database with comprehensive, realistic demo accounts, stores, and ratings:
 ```bash
 cd server
-npm run prisma:generate
+npm run seed
 ```
-
-### Seeding Data
+Or from the root directory:
 ```bash
-cd server
-npm run prisma:seed
+npm run seed
 ```

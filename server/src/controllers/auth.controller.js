@@ -38,9 +38,10 @@ export const login = async (req, res, next) => {
 
 export const getMe = async (req, res, next) => {
   try {
+    const { password, ...safeUser } = req.user;
     return successResponse(
       res,
-      { user: req.user },
+      { user: safeUser },
       'Current user retrieved',
       HTTP_STATUS.OK
     );

@@ -1,6 +1,6 @@
 # Database Schema & Relational Design
-
-The database layer runs on **MySQL 8.0** managed via **Prisma ORM**.
+ 
+The database layer runs on **MySQL 8.0** managed via native **InnoDB DDL** and **mysql2** connection pooling.
 
 ## Entity Relationship Overview
 

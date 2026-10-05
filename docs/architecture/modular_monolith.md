@@ -19,7 +19,7 @@ React 19 Frontend (SPA)
          │
     Repositories (Database Access Abstraction)
          │
-    Prisma ORM (Parameterized Prepared Statements)
+    mysql2 Driver (Parameterized Prepared Statements)
          │
      MySQL 8.0 (InnoDB Engine with ACID guarantees)
 ```
@@ -37,7 +37,7 @@ React 19 Frontend (SPA)
 - Delegates business execution to domain services.
 - Sends standardized response envelopes via `successResponse()`.
 - Captures unhandled errors and passes them down the chain via `next(error)`.
-- **Rule:** Controllers never communicate with Prisma directly.
+- **Rule:** Controllers never execute SQL queries or communicate with the database directly.
 
 ### 3. Service Layer (`server/src/services/`)
 - Encapsulates business logic, domain rules, and transactional workflows.
@@ -47,12 +47,12 @@ React 19 Frontend (SPA)
 - **Rule:** Completely agnostic of HTTP constructs (no `req` or `res` objects).
 
 ### 4. Repository Layer (`server/src/repositories/`)
-- Single point of interaction with the MySQL database via Prisma Client.
+- Single point of interaction with the MySQL database via `mysql2` connection pool.
 - Encapsulates queries, projections, sorting criteria, and transactions.
 - **Rule:** Returns plain domain objects/arrays and does not perform business calculations.
 
 ### 5. Database Layer (`server/src/database/`)
-- Manages connection lifecycle (`$connect`, `$disconnect`).
+- Manages connection lifecycle (pool creation, ping, graceful disconnect).
 - Exposes health checks (`checkDatabaseConnection`) for readiness probes.
 
 ---

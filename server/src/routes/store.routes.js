@@ -22,7 +22,8 @@ const optionalAuth = async (req, res, next) => {
       );
       const user = await userRepository.findById(decoded.id);
       if (user) {
-        req.user = user;
+        const { password, ...safeUser } = user;
+        req.user = safeUser;
       }
     }
   } catch (err) {

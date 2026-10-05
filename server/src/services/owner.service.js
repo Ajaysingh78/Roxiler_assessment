@@ -93,7 +93,7 @@ export class OwnerService {
       if (typeof valA === 'string') {
         return order === 'asc'
           ? valA.localeCompare(valB)
-          : valB.localeCompare(a);
+          : valB.localeCompare(valA);
       }
 
       return order === 'asc' ? valA - valB : valB - valA;

@@ -18,7 +18,8 @@ export const authenticate = async (req, res, next) => {
       return errorResponse(res, 'User account no longer exists', 401);
     }
 
-    req.user = user;
+    const { password, ...safeUser } = user;
+    req.user = safeUser;
     next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
