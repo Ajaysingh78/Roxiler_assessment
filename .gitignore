@@ -8,13 +8,13 @@ dist/
 client/dist/
 build/
 
-# Environment variables
+# Environment variables (strict protection)
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-server/.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
 
 # Database
 *.db
