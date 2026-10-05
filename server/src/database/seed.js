@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { randomUUID } from 'node:crypto';
-import { pool, disconnectDatabase } from './connection.js';
+import { pool, initializeDatabase, disconnectDatabase } from './connection.js';
 
 /**
  * Roxiler Systems Store Rating Platform
@@ -11,6 +11,9 @@ async function seed() {
   console.log('🌱 ROXILER SEED: Starting Comprehensive Data Seeding');
   console.log('Database Engine: MySQL (via mysql2 pool)');
   console.log('=====================================================');
+
+  // Ensure tables exist before inserting records
+  await initializeDatabase();
 
   const stats = {
     adminsCreated: 0,

@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import app from './app.js';
-import { checkDatabaseConnection, disconnectDatabase } from './database/connection.js';
+import { checkDatabaseConnection, initializeDatabase, disconnectDatabase } from './database/connection.js';
 
 const PORT = process.env.PORT || 5000;
 
@@ -10,7 +10,8 @@ export async function startServer() {
   try {
     // Verify database connectivity
     await checkDatabaseConnection();
-    console.log('Database connected successfully.');
+    await initializeDatabase();
+    console.log('Database connected and initialized successfully.');
 
     const server = app.listen(PORT, '0.0.0.0', () => {
       console.log(`Roxiler API Server running on http://localhost:${PORT}`);
