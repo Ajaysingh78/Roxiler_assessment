@@ -8,9 +8,12 @@ dotenv.config();
  * Supports standard DATABASE_URL as well as Railway-provided MYSQL_* variables
  */
 function getPoolConfig() {
-  const databaseUrl = process.env.DATABASE_URL || process.env.MYSQL_PRIVATE_URL || process.env.MYSQL_PUBLIC_URL || process.env.MYSQL_URL;
+  let databaseUrl = process.env.DATABASE_URL || process.env.MYSQL_PRIVATE_URL || process.env.MYSQL_PUBLIC_URL || process.env.MYSQL_URL;
 
   if (databaseUrl) {
+    databaseUrl = databaseUrl.trim().replace(/^["']|["']$/g, '');
+    const masked = databaseUrl.replace(/:[^:@]+@/, ':***@');
+    console.log(`Connecting to database at: ${masked}`);
     try {
       const url = new URL(databaseUrl);
       const isRemote = url.hostname !== 'localhost' && url.hostname !== '127.0.0.1' && url.hostname !== '::1';
